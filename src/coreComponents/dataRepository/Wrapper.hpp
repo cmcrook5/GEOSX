@@ -317,24 +317,21 @@ public:
   localIndex packByIndex( buffer_unit_type * & buffer, arrayView1d< localIndex const > const & packList, bool withMetadata, bool onDevice, parallelDeviceEvents & events ) const override final
   {
     localIndex packedSize = 0;
-    if( sizedFromParent() == 1 )
+    if( withMetadata ) packedSize += bufferOps::Pack< true >( buffer, getName() );
+    if( onDevice )
     {
-      if( withMetadata ) packedSize += bufferOps::Pack< true >( buffer, getName() );
-      if( onDevice )
+      if( withMetadata )
       {
-        if( withMetadata )
-        {
-          packedSize += wrapperHelpers::PackByIndexDevice< true >( buffer, reference(), packList, events );
-        }
-        else
-        {
-          packedSize += wrapperHelpers::PackDataByIndexDevice< true >( buffer, reference(), packList, events );
-        }
+        packedSize += wrapperHelpers::PackByIndexDevice< true >( buffer, reference(), packList, events );
       }
       else
       {
-        packedSize += wrapperHelpers::PackByIndex< true >( buffer, *m_data, packList );
+        packedSize += wrapperHelpers::PackDataByIndexDevice< true >( buffer, reference(), packList, events );
       }
+    }
+    else
+    {
+      packedSize += wrapperHelpers::PackByIndex< true >( buffer, *m_data, packList );
     }
     return packedSize;
   }
@@ -372,24 +369,21 @@ public:
   {
     localIndex packedSize = 0;
     buffer_unit_type * buffer = nullptr;
-    if( sizedFromParent() == 1 )
+    if( withMetadata ) packedSize += bufferOps::Pack< false >( buffer, getName() );
+    if( onDevice )
     {
-      if( withMetadata ) packedSize += bufferOps::Pack< false >( buffer, getName() );
-      if( onDevice )
+      if( withMetadata )
       {
-        if( withMetadata )
-        {
-          packedSize += wrapperHelpers::PackByIndexDevice< false >( buffer, reference(), packList, events );
-        }
-        else
-        {
-          packedSize += wrapperHelpers::PackDataByIndexDevice< false >( buffer, reference(), packList, events );
-        }
+        packedSize += wrapperHelpers::PackByIndexDevice< false >( buffer, reference(), packList, events );
       }
       else
       {
-        packedSize += wrapperHelpers::PackByIndex< false >( buffer, *m_data, packList );
+        packedSize += wrapperHelpers::PackDataByIndexDevice< false >( buffer, reference(), packList, events );
       }
+    }
+    else
+    {
+      packedSize += wrapperHelpers::PackByIndex< false >( buffer, *m_data, packList );
     }
     return packedSize;
   }
